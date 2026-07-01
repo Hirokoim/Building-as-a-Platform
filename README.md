@@ -3,7 +3,7 @@
 「アプリを配る側」から「アプリが作られる前提条件（文脈・データ・ルール）を提供する側」へと転換する構想。
 Vibe Crafting 時代における不動産デベロッパーのあるべきポジションを定義する。
 
-**Status:** 構想フェーズ。仮説と設計思想を整理中。実装コードはまだ存在しない。
+**Status:** 実装フェーズ開始。テナント側AIは MulmoClaude を採用し、Context Layer 用の MCP サーバーの試作を開始。
 
 ## Concept
 
@@ -84,6 +84,25 @@ Building as a Platform の三層構造。
 
 **長期（4〜7年）**
 ビル＝Platform、テナント＝Vibe Crafter という構造へ。ビル側はデータ・空間・信頼を提供する存在となり、運営の本質が「画面提供」から「文脈提供」へ変わる。
+
+## フォルダ構成
+
+```
+Building-as-a-Platform/
+├── README.md            本ドキュメント（構想・アーキテクチャ）
+├── Mulmo_advice.md       MulmoClaude 連携の実装メモ（設計時の下書き）
+└── mcp-server/           Context Layer の MCP サーバー（テナント側AI ↔ ビル側データの橋渡し）
+    ├── src/
+    │   ├── store.ts      データ層。今はダミーデータだが、将来は Supabase 等への差し替え窓口になる
+    │   ├── tools.ts       MCP ツール定義（getBuildings / getBuildingDetail / getRequests / createRequest）
+    │   └── index.ts       HTTP(Streamable HTTP) で MCP を公開するエントリポイント
+    └── package.json
+```
+
+**設計方針:**
+- REST API 層は作らず、MCP ツールがデータ層（`store.ts`）を直接呼ぶ。REST を叩く他クライアントが存在しない限りこの方が単純。
+- `store.ts` の関数シグネチャ（`listBuildings` / `getBuilding` / `listRequests` / `createRequest`）は固定し、中身だけを差し替えられるようにしてある。Context Layer のデータベースを Supabase にする場合も、この層をSupabaseクエリに置き換えるだけで済む。
+- MCP サーバーは HTTP（`type: "http"`）で公開している。MulmoClaude 側の Docker サンドボックス使用時に stdio 型 MCP が使えない制約があるため。
 
 ## ドキュメント　※これから作成します！下は仮置きです。
 
